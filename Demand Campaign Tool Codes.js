@@ -1,139 +1,228 @@
 
-//Sheet method
+
+var errmsg=''
+
 function onOpen(e) {
-  // Logger.log('Allen is the best');
   //Create Menu
- 
   ui= SpreadsheetApp.getUi()
-      .createMenu('Management API Start')
-      .addItem('Create UI','createUI')
-      .addItem('Generate Token','GenerateToken')
-      .addItem('Bid Operation Run','bidOperationRun')
-      .addItem('Budget Operation Run','budgetOperationRun')
-      .addToUi();
+  .createMenu('Management API Menu')
+  .addItem('Show SideBar','showSidebar')
+  .addSeparator()
+  .addItem('Generate Token','setTimeLoop')
+  .addItem('Find Duplicate','findDuplicate')
+  .addItem('Run Bid Operation','bidOperationRun')
+  .addItem('Run Budget Operation','budgetOperationRun')
+  .addSeparator()
+  .addItem('Create a new Bid Sheet','createBidSheet')
+  .addItem('Create a new Budget Sheet','createBudgetSheet')
+  .addToUi();
+}
 
+// TODO: Clear data via a button click
+function clearData() {
+   SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(7,1,1000,9).clear()
+}
+
+function showSidebar() {
+  const template = HtmlService.createTemplateFromFile('Dashboard.html')
+  const html=template.evaluate();
+  html.setTitle('Tool Dashboard');
+  ui= SpreadsheetApp.getUi().showSidebar(html); //Only width 300 pixel  
+}
+
+
+
+function createBidSheet(){
+  showCreateSheetDialog(true)
+}
+
+function createBudgetSheet(){
+  showCreateSheetDialog(false)
+}
+
+ function showCreateSheetDialog(isBidSheet){
+     var isBidSheetStr=''
+    if(isBidSheet){
+       isBidSheetStr='Bid'
+    }else{
+       isBidSheetStr='Budget'
+    }
    
+    var ui = SpreadsheetApp.getUi(); // Same variations.
+    var result = ui.prompt(
+    "Let\'s create a new "+isBidSheetStr+"Sheet!",
+    'Please enter your account_name:',
+    ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  var button = result.getSelectedButton();
+  var text = result.getResponseText();
+  if (button == ui.Button.OK) {
+    // User clicked "OK".
+    if(isBidSheet){
+      drawBidSheet(text)
+    }else{
+      drawBudgetSheet(text)
+    }
+  }
+
+  }
+  function showDuplicateDialog(isDuplicate){
+    if(isDuplicate){
+    var ui = SpreadsheetApp.getUi(); // Same variations.
+    var result = ui.alert(
+    "There are some duplicate elements",
+    ui.ButtonSet.OK);
+    }else{
+    var ui = SpreadsheetApp.getUi(); // Same variations.
+    var result = ui.alert(
+    "There is No duplicate elements",
+    ui.ButtonSet.OK);
+    }
+  }
+
+  /**
+   * Create Bid worksheet
+   */
+   function drawBidSheet(sheetname){
+  var spreadSheet = SpreadsheetApp.getActiveSpreadsheet()
+  spreadSheet.insertSheet("Update/Delete Bid "+sheetname)
+  //Create UI for sheet1
+  var sheet1=spreadSheet.getSheetByName("Update/Delete Bid "+sheetname);
+  sheet1.setColumnWidth(1,250)
+  sheet1.setColumnWidth(2,250)
+  sheet1.setColumnWidth(3,250)
+  sheet1.setColumnWidth(4,250)
+  sheet1.setColumnWidth(5,250)
+  sheet1.setColumnWidth(8,250)
+  sheet1.setColumnWidth(9,300)
+  sheet1.getRange("A1").setValue("Step 1. Please enter your secret key and refresh token below and click the Generate Token item under the Management API Menu or sidebar").setFontSize(14).setHorizontalAlignment("left").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.OVERFLOW)
+  sheet1.getRange("A5").setValue("Step 2. Please copy your data as the formate below and click the Run Bid Operation under the Management API Menu or sidebar").setFontSize(14).setHorizontalAlignment("left").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.OVERFLOW)
+  sheet1.getRange("A2:B4").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
+  sheet1.getRange("C2:D2").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setBackgroundRGB(255,215,0)
+  sheet1.getRange("A2").setValue("secret key").setHorizontalAlignment("center").setVerticalAlignment("middle")
+  sheet1.getRange("C2").setValue("account name").setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setHorizontalAlignment("center")
+  sheet1.getRange("D2").setValue(sheetname).setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
+  sheet1.getRange("A3").setValue("refresh token").setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
+  sheet1.getRange("A4").setValue("Bearer Token").setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
+  sheet1.getRange("B2").setHorizontalAlignment("center").setVerticalAlignment("middle").setNote("Please input the secret key here")
+  sheet1.getRange("B3").setHorizontalAlignment("center").setVerticalAlignment("middle").setNote("Please input your refresh token here").setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP)
+  sheet1.getRange("B4").setHorizontalAlignment("center").setVerticalAlignment("middle").setNote("DONOT EDIT HERE!!      This filed will be generated by clicking the Generate Token item under Management API Menu").setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP)
+  sheet1.getRange("A6").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setHorizontalAlignment("center").setVerticalAlignment("middle").setValue("Bearer Token").setse
+  sheet1.getRange("A6:I6").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setBackgroundRGB(60,41,104).setFontColor("#ffffff")
+  var initValuesArray=[["app_name","app_id","campaign_id(Required)","pub_name","pub_app_id(Required)","geo(Required)","rate(Required)","update_or_delete(Required)","status"]]
+  sheet1.getRange("A6:I6").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setValues(initValuesArray).setHorizontalAlignment("center").setVerticalAlignment("middle");
 }
 
-function createUI(){
-  //Create Ui
-  var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  activeSheet.setColumnWidth(1,250)
-  activeSheet.setColumnWidth(2,250)
-  activeSheet.setColumnWidth(6,150)
-  activeSheet.setColumnWidth(7,250)
-  activeSheet.setColumnWidth(8,250)
-  activeSheet.setColumnWidth(12,450)
-  activeSheet.setColumnWidth(13,250)
-  activeSheet.setRowHeight(6,100)
-  activeSheet.getRange("A1:F1").merge().setValue("Before You Begin ").setBackgroundRGB(221, 136, 17).setFontSize(14).setHorizontalAlignment("center").setVerticalAlignment("middle")
-  activeSheet.getRange("A2:F2").merge().setValue("Please enter your secret key and refresh token here:").setFontSize(14).setHorizontalAlignment("center").setVerticalAlignment("middle")
-  activeSheet.getRange("A3").setValue("secret key").setHorizontalAlignment("center").setVerticalAlignment("middle")
-  activeSheet.getRange("A4").setValue("refresh token").setHorizontalAlignment("center").setVerticalAlignment("middle")
-  activeSheet.getRange("B3:F3").merge().setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-  activeSheet.getRange("B4:F4").merge().setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-  activeSheet.getRange("A3:A4").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
-  activeSheet.getRange("A5:F5").merge().setValue("Click \"GenerateToken\" which is under \"Managerment API Start\" in the menu bar").setFontSize(14).setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-  activeSheet.getRange("A6").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setHorizontalAlignment("center").setVerticalAlignment("middle").setValue("Bearer Token")
-  activeSheet.getRange("B6:F6").merge().setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-  activeSheet.getRange("A7:M7").merge().setValue("Let's do it!").setBackgroundRGB(221, 136, 17).setFontSize(18).setHorizontalAlignment("center").setVerticalAlignment("middle")
-  activeSheet.getRange("A8:F8").merge().setValue("The Range of  pending list \n1.Please add your  pending list  to the below range. \n2.Select the data range where need to be operated \n3.Click the \"Bid Operation Run\" which is under the \"Managerment API Start\" in the menu bar").setFontSize(14).setHorizontalAlignment("left").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-  activeSheet.getRange("H8:K8").merge().setValue("The Range of  pending list \n1.Please add your  pending list  to the below range. \n2.Select the data range where need to be operated \n3.Click the \"Budget Operation Run'\" which is under the \"Managerment API Start\" in the menu bar").setFontSize(14).setHorizontalAlignment("left").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-  var initValuesArray=[["campaign_id","pub_app_id","pub_name","geo","rate","update_or_delete","status","campaign_id","campaign_bid","daily_budget","total_budget","Campaign_bid_type (only 'install' is allowed)","status"]]
-  activeSheet.getRange("A9:M9").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setValues(initValuesArray).setHorizontalAlignment("center").setVerticalAlignment("middle").setBackgroundRGB(238, 238, 0);
+
+ /**
+   * Create Budget worksheet
+   */
+
+
+ 
+   function drawBudgetSheet(sheetname){
+  //Create2 sheets
+  var spreadSheet = SpreadsheetApp.getActiveSpreadsheet()
+  spreadSheet.insertSheet("Update Budget  "+sheetname)
+  //Create UI for sheet2
+  var sheet2=spreadSheet.getSheetByName("Update Budget  "+sheetname);
+  //Create UI for sheet1
+  sheet2.setColumnWidth(1,250)
+  sheet2.setColumnWidth(2,250)
+  sheet2.setColumnWidth(3,250)
+  sheet2.setColumnWidth(4,250)
+  sheet2.setColumnWidth(7,250)
+  sheet2.setColumnWidth(8,250)
+  sheet2.getRange("A1").setValue("Step 1. Please enter your secret key and refresh token below and click the Generate Token item under the Management API Menu or sidebar").setFontSize(14).setHorizontalAlignment("left").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.OVERFLOW)
+  sheet2.getRange("A5").setValue("Step 2. Please copy your data as the formate below and click the Run Bid Operation under the Management API Menu or sidebar").setFontSize(14).setHorizontalAlignment("left").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.OVERFLOW)
+  sheet2.getRange("A2:B4").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
+  sheet2.getRange("A2").setValue("secret key").setHorizontalAlignment("center").setVerticalAlignment("middle")
+  sheet2.getRange("C2:D2").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setBackgroundRGB(255,215,0)
+  sheet2.getRange("C2").setValue("account name").setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setHorizontalAlignment("center")
+  sheet2.getRange("C2").setValue("account name").setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
+  sheet2.getRange("D2").setValue(sheetname).setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
+  sheet2.getRange("A3").setValue("refresh token").setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
+  sheet2.getRange("A4").setValue("Bearer Token").setHorizontalAlignment("center").setVerticalAlignment("middle").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
+ sheet2.getRange("B2").setHorizontalAlignment("center").setVerticalAlignment("middle").setNote("Please input the secret key here").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
+  sheet2.getRange("B3").setHorizontalAlignment("center").setVerticalAlignment("middle").setNote("Please input your refresh token here").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP)
+  sheet2.getRange("B4").setHorizontalAlignment("center").setVerticalAlignment("middle").setNote("DONOT EDIT HERE!!      This filed will be generated by clicking the Generate Token item under Management API Menu").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP)
+  sheet2.getRange("A6").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setHorizontalAlignment("center").setVerticalAlignment("middle").setValue("Bearer Token")
+  sheet2.getRange("A6:H6").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setBackgroundRGB(60,41,104).setFontColor("#ffffff")
+var initValuesArray=[["app_name","app_id","campaign_id(required)","campaign_bid(required)","daily_budget(required)","total_budget(required)","Campaign_bid_type (only 'install' is allowed)","status"]]
+  sheet2.getRange("A6:H6").setBorder(true, true, true, true, true, true, "black", SpreadsheetApp.BorderStyle.SOLID).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setValues(initValuesArray).setHorizontalAlignment("center").setVerticalAlignment("middle")
 }
 
-//API method
+
+
+
+  /**
+   * API method
+   */
 function getTokenThroughAPI(sceretKey,refreshToken) {
   const endPoint = "https://manage-ext.api.vungle.com/generate"
   const headers = {
     'secret-key' : sceretKey,
     'refresh-token' : refreshToken
   }
-   var token =  getFunc(endPoint,headers)
-  console.log(" method :getTokenThroughAPI   bearerToken :::::"+token)
-  return token
+   getFunc(endPoint,headers)
 }
-
-
-
 
 function UpdateInsertBidThroughAPI(i,campaignId,data,bearerToken) {
   const endPoint = "https://manage-ext.api.vungle.com/campaigns/"+campaignId+"/multibidding"
-  var promise =  postFunc(endPoint,data,bearerToken)
-  promise.then((data) => {
-        if(data="success"){
-        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        activeSheet.getRange(i+10,7).setBackgroundRGB(0,200,0)
-        activeSheet.getRange(i+10,7).setValue("success")
-        }
-    }).catch((err)=>{
-       var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        activeSheet.getRange(i+10,7).setBackgroundRGB(200,0,0)
-        activeSheet.getRange(i+10,7).setValue(err)
-    });
+  postFunc(i,endPoint,data,bearerToken)
   console.log(" method :UpdateInsertBidThroughAPI   endPoint :::::"+endPoint)
-
 }
 
 
  function DeleteBidThroughAPI(i,campaignId,data,bearerToken) {
   const endPoint = "https://manage-ext.api.vungle.com/campaigns/"+campaignId+"/multibidding"
-  var promise =  DeleteFunc(endPoint,data,bearerToken)
-  promise.then((data) => {
-        if(data="success"){
-        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        activeSheet.getRange(i+10,7).setBackgroundRGB(0,200,0)
-        activeSheet.getRange(i+10,7).setValue("success")
-        }
-    }).catch((err)=>{
-       var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        activeSheet.getRange(i+10,7).setBackgroundRGB(200,0,0)
-        activeSheet.getRange(i+10,7).setValue(err)
-    });
+  DeleteFunc(i,endPoint,data,bearerToken) 
   console.log(" method :DeleteBidThroughAPI   endPoint :::::"+endPoint)
 }
 
-   function  SetBudgetThroughAPI(i,campaignId,data,bearerToken) {
+function  SetBudgetThroughAPI(i,campaignId,data,bearerToken) {
   const endPoint = "https://manage-ext.api.vungle.com/campaigns/"+campaignId+"/budget"
-  const promise =   PutFunc(endPoint,data,bearerToken)
-  promise.then((data) => {
-        if(data="success"){
-        console.log(" method :SetBudgetThroughAPI   endPoint  insideinside :::::"+endPoint)
-        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        activeSheet.getRange(i+10,13).setBackgroundRGB(0,200,0)
-        activeSheet.getRange(i+10,13).setValue("success")
-        }
-    }).catch((err)=>{
-       var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        activeSheet.getRange(i+10,13).setBackgroundRGB(200,0,0)
-        activeSheet.getRange(i+10,13).setValue(err)
-    });
+    PutFunc(i,endPoint,data,bearerToken)
   console.log(" method :SetBudgetThroughAPI   endPoint  endend :::::"+endPoint)
-
 }
-
-
 
 //GET 
 const getFunc =  (url,headers) => {
+  var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const options = {
     'method' : 'get',
-    'headers' : headers
+    'headers' : headers,
+    'muteHttpExceptions': true
   }
-  const res = UrlFetchApp.fetch(url,options)
-  console.log("res"+res.getResponseCode());
-  const resJson = JSON.parse(res.getContentText());
-  var bearerToken=resJson["token"];
-  
-  return bearerToken
+
+      const res =  UrlFetchApp.fetch(url,options)
+      var responseCode = res.getResponseCode()
+      if (responseCode === 200) {
+        const resJson = JSON.parse(res.getContentText());
+         var bearerToken=resJson["token"];
+            Logger.log('method-getFunc bearerToken: '+bearerToken);
+         if(bearerToken==""||bearerToken==null){
+            activeSheet.getRange("B4").setValue("secretkey or refreshtoken is wrong").setBackgroundRGB(255,215,0).setHorizontalAlignment("center").setVerticalAlignment("middle")
+         }else{
+            activeSheet.getRange("B4").setValue(bearerToken).setBackgroundRGB(20,205,200).setHorizontalAlignment("left").setVerticalAlignment("center")
+         }
+         
+     }else{
+        activeSheet.getRange("B4").setValue("token is invalid").setBackgroundRGB(20,205,200)
+    // if it run unsuccefully,should cancel timeTrigger
+        var triggers = ScriptApp.getProjectTriggers();
+        for (var i = 0; i < triggers.length; i++) {
+        ScriptApp.deleteTrigger(triggers[i]);
+
+     }
+  }
 }
 
-
-
-//Post
-const postFunc =  (url,data,bearerToken) => {
-  return new Promise((resolve,reject)=>{
+/**
+ * Post
+ */
+const postFunc =  (i,url,data,bearerToken) => {
 	const headers = {
     'vungle-version': 1,
     'Content-Type': 'application/json',
@@ -143,20 +232,40 @@ const postFunc =  (url,data,bearerToken) => {
     'method' : 'post',
     'Content-Type': 'application/json',
     'headers' : headers,
-    'payload' : data
+    'payload' : data,
+    'muteHttpExceptions': true
   }
+      const res =  UrlFetchApp.fetch(url,options)
+      var responseCode = res.getResponseCode()
+       Logger.log('method-postFunc set responseCode: '+responseCode);
+       Logger.log('method-postFunc set responseContext: '+res.getContentText());
+       var obj=JSON.parse(res.getContentText())
+        printKeys(obj)
 
-     const res = UrlFetchApp.fetch(url,options)
-     resolve('success') 
-    Logger.log("code: " + result.getResponseCode());
-    Logger.log("text: " + result.getContentText());
-	})
+      if (responseCode === 200) {
+        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        activeSheet.getRange(i,9).setBackgroundRGB(20,205,200)
+        activeSheet.getRange(i,9).setValue("success")
+     }else{
+        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        var obj=JSON.parse(res.getContentText())
+         printKeys(obj)
+         if(errmsg=="token is invalid"){
+          activeSheet.getRange("B4").setValue(errmsg).setBackgroundRGB(255,215,0)   
+         }
+         activeSheet.getRange(i,9).setBackgroundRGB(255,215,0).setValue(errmsg)
+         errmsg=''
+        Logger.log('method-UpdateInsertBid printValues   outside : '+errmsg);
+        Logger.log('method-UpdateInsertBid printValues outside : '+errmsg);     
+     }
 }
 
-//Delete
-const DeleteFunc =  (url,data,bearerToken) => {
+/**
+ * Delete
+ */
+const DeleteFunc = async (i,url,data,bearerToken) => {
 
-    return new Promise((resolve,reject)=>{
+   
 	const headers = {
     'vungle-version': 1,
     'Content-Type': 'application/json',
@@ -166,19 +275,38 @@ const DeleteFunc =  (url,data,bearerToken) => {
     'method' : 'delete',
     'Content-Type': 'application/json',
     'headers' : headers,
-    'payload' : data
+    'payload' : data,
+    'muteHttpExceptions': true
   }
-     const res = UrlFetchApp.fetch(url,options)
-     resolve('success') 
-    Logger.log("code: " + result.getResponseCode());
-    Logger.log("text: " + result.getContentText());
-	})
-}
-//Put
+      const res =  UrlFetchApp.fetch(url,options)
+      var responseCode = res.getResponseCode()
+       var obj=JSON.parse(res.getContentText())
+        printKeys(obj)
+      Logger.log('method-DeleteFunc set responseCode: '+responseCode);
+      Logger.log('method-DeleteFunc set responseContext: '+res.getContentText());
+      if (responseCode === 200) {
+        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        activeSheet.getRange(i,9).setBackgroundRGB(20,205,200)
+        activeSheet.getRange(i,9).setValue("success") 
+     }else{
+        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        var obj=JSON.parse(res.getContentText())
+         printKeys(obj)
+         if(errmsg=="token is invalid"){
+          activeSheet.getRange("B4").setValue(errmsg).setBackgroundRGB(255,215,0)   
+         }
+         activeSheet.getRange(i,9).setBackgroundRGB(255,215,0).setValue(errmsg)
+         errmsg=''
+        Logger.log('method-UpdateInsertBid printValues   outside : '+errmsg);
+     }
+  }
 
-  const  PutFunc =  (url,data,bearerToken) => {
+
+/**
+ * Put
+ */
+   const  PutFunc =   (i,url,data,bearerToken) => {
  
-  return new Promise((resolve,reject)=>{
 	const headers = {
     'vungle-version': 1,
     'Content-Type': 'application/json',
@@ -188,73 +316,59 @@ const DeleteFunc =  (url,data,bearerToken) => {
     'method' : 'put',
     'Content-Type': 'application/json',
     'headers' : headers,
-    'payload' : data
-  }
+    'payload' : data,
+    'muteHttpExceptions': true
 
-     const res = UrlFetchApp.fetch(url,options)
-     resolve('success') 
-
-    Logger.log("code: " + result.getResponseCode());
-    Logger.log("text: " + result.getContentText());
-	})
+  } 
+      const res =   UrlFetchApp.fetch(url,options)
+      var responseCode = res.getResponseCode()
+       Logger.log('method-PutFunc PutFunc PutFunc: '+res.getContentText());
+      if (responseCode === 200) {
+        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        activeSheet.getRange(i,8).setBackgroundRGB(20,205,200)
+        activeSheet.getRange(i,8).setValue("success")
+     }else{
+        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        var obj=JSON.parse(res.getContentText())
+        if(obj.message!=null){
+          activeSheet.getRange("B4").setValue("token is invalid").setBackgroundRGB(255,215,0)
+          activeSheet.getRange(i,8).setBackgroundRGB(255,215,0).setValue("token is invalid") 
+        }else if(obj.messages!=null){
+          activeSheet.getRange(i,8).setBackgroundRGB(255,215,0).setValue(obj.messages) 
+        }
+          
+         Logger.log('method-PutFunc PutFunc   PutFunc : '+obj.message);
+     }
 }
 
 
-//Menu method
 
-
-/*  json templete
-{
-  "publisher_rates": [
-    {
-      "pub_app_id": "5df0a8838d9ee70011ddbfb0",
-      "name": "Fun game 1",
-      "geo": "CN",
-      "rate": 0.22
-    },
-    {
-      "pub_app_id": "5df0a8838d9ee70011ddbfb0",
-      "name": "Fun game 2",
-      "geo": "ID",
-      "rate": 0.33
-    }
-  ]
+//最后再加入的定时器
+function setTimeLoop(){
+  GenerateToken();
+   // Deletes all triggers in the current project.
+var triggers = ScriptApp.getProjectTriggers();
+for (var i = 0; i < triggers.length; i++) {
+  ScriptApp.deleteTrigger(triggers[i]);
 }
-*/
-
-
-/*
-{
-  "budget": {
-    "bid": 20.50,
-    "daily": 10000,
-    "total": 1000000,
-    "type": "install"
-  }
-}*/
-
-
+    ScriptApp.newTrigger("GenerateToken")
+    .timeBased()
+    .everyMinutes(30)
+    .create();
+}
 
 function GenerateToken(){ 
   var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var sceretKey=activeSheet.getRange("B3:F3").getValue().toString();
-  var refreshToken=activeSheet.getRange("B4:F4").getValue().toString();
-  
-  Logger.log('method-GenerateToken sceretKey: '+sceretKey);
+  var secretKey=activeSheet.getRange("B2").getValue().toString();
+  var refreshToken=activeSheet.getRange("B3").getValue().toString();
+  Logger.log('method-GenerateToken sceretKey: '+secretKey);
   Logger.log('method:GenerateToken refreshToken: '+refreshToken);
-  var bearerToken=getTokenThroughAPI(sceretKey,refreshToken);
-  activeSheet.getRange("B6:F6").setValue(bearerToken);
-   Logger.log('method-GenerateToken bearerToken: '+bearerToken);
+  getTokenThroughAPI(secretKey,refreshToken);
 }
-
-
-
-
-
 
 function UpdateInsertBid(i,campaignId,jsonBody){
  var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var bearerToken=activeSheet.getRange("B6:F6").getValue();
+  var bearerToken=activeSheet.getRange("B4").getValue();
   Logger.log('method-UpdateInsertBid bearerToken: '+bearerToken);
  if(bearerToken!=null&&bearerToken!=""){
      Logger.log('method-UpdateInsertBid jsonBody: '+jsonBody);
@@ -266,7 +380,7 @@ function UpdateInsertBid(i,campaignId,jsonBody){
 
  function DeleteBid(i,campaignId,jsonBody){
  var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var bearerToken=activeSheet.getRange("B6:F6").getValue();
+  var bearerToken=activeSheet.getRange("B4").getValue();
   Logger.log('method-DeleteBid bearerToken: '+bearerToken);
  if(bearerToken!=null&&bearerToken!=""){
      Logger.log('method-DeleteBid jsonBody: '+jsonBody);
@@ -280,7 +394,7 @@ function UpdateInsertBid(i,campaignId,jsonBody){
  function SetBudget(i,campaignId,jsonBody){
  var response
  var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var bearerToken=activeSheet.getRange("B6:F6").getValue();
+  var bearerToken=activeSheet.getRange("B4").getValue();
   Logger.log('method-SetBudget bearerToken: '+bearerToken);
  if(bearerToken!=null&&bearerToken!=""){
      Logger.log('method-SetBudget jsonBody: '+jsonBody);
@@ -288,70 +402,218 @@ function UpdateInsertBid(i,campaignId,jsonBody){
       SetBudgetThroughAPI(i,campaignId,jsonBody,bearerToken);
    }  
  }
+ }
+
+
+ function findDuplicate(){
+    var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var rawArray=[]
+    //收集原始数据
+   for (var row=7; row<1000; row++){
+      var campaignId=activeSheet.getRange(row,3).getValue();
+      var pubId=activeSheet.getRange(row,5).getValue();
+      var geo=activeSheet.getRange(row,6).getValue();
+     if(campaignId==""||campaignId==null){
+      Logger.log('method-bidOperationRun break: ');
+             break;// Stop the loop
+        }else{ 
+     var rowstr=campaignId+pubId+geo+"";
+     rawArray.push(rowstr)
+     Logger.log('method-bidOperationRun rawArray: '+rawArray);
+        }
+   }
+   //去重操作
+   if(rawArray.length!=0){
+   searchKeys(rawArray)
+   }
+ }
+
+  //查找重复元素
+function searchKeys(arr){
+    var str = "";
+    var list = [];
+    var haveSameDialog = false
+    for (var i = 0; i < arr.length; i++) {
+        var hasRead = false;
+        for ( var k = 0; k < list.length; k++) {
+            if (list[k] == arr[i]){
+                hasRead = true;
+            }
+        }
+        if(!hasRead){
+            var _index = i, haveSame = false;
+            for (var j = i + 1; j < arr.length; j++) {
+                if (arr[i] == arr[j]) {
+                    _index += "," + j;
+                    haveSame = true;
+                    haveSameDialog=true
+                }
+            }
+            if (haveSame) {
+                list.push(arr[i]);
+            Logger.log('method-相同值 _index: '+_index);
+                var dupRowStr=_index+""
+                if(dupRowStr!=null&&dupRowStr!=""){
+            Logger.log('method-相同值 dupRowStr: '+dupRowStr);
+                  var dupRowArray=dupRowStr.split(",")
+            Logger.log('method-相同值 dupRowArray: '+dupRowStr);
+                  for(var i=0; i<dupRowArray.length; i++){
+                  var dupRow=Number(dupRowArray[i]) 
+            Logger.log('method-相同值 dupRow: '+dupRow);
+             var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+             activeSheet.getRange(dupRow+7,1,1,7).setBackgroundRGB(183,225,205)
+                  }
+                }
+            }
+             
+        }
+    }
+    showDuplicateDialog(haveSameDialog)
+    return str
 }
 
-
-//Tools
-
  function   bidOperationRun(){
-  var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var jsonarray=activeSheet.getActiveRange().getValues();
-  activeSheet.getRange(10,7,500).clear();
-  Logger.log('method-bidOperationRun jsonarray: '+jsonarray);
-  for (var i=0,len=jsonarray.length; i<len; i++)
-{ 
-    activeSheet.getRange(i+10,7).setBackgroundRGB(205,127,50)
-    activeSheet.getRange(i+10,7).setValue("running")
+   
+    var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+     var activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName();
+     if(!activeSheetName.includes("Bid")){
+      showAlert('Update/Delete Bid ')
+      return 
+     }
+    //  Logger.log('method-bidOperationRun activeSheet: '+activeSheet.getSheetId()+"sdfdaf::::::"+activeSheet1.getSheetId());
+       for (var row=7; row<1000; row++)
+      {  
+        var campaignId=activeSheet.getRange(row,3).getValue();
+        Logger.log('method-bidOperationRun campaignId: '+campaignId);
+        if(campaignId==""||campaignId==null){
+          Logger.log('method-bidOperationRun break: ');
+             break;// Stop the loop
+        }else
+        {
+        activeSheet.getRange(row,9).setBackgroundRGB(183,225,205)
+        activeSheet.getRange(row,9).setValue("running")
     //获取campaignID
-      var campaignId=jsonarray[i][0];
-      var tagRun=jsonarray[i][5];
-      var jsonBodyArray=[[jsonarray[i][1],jsonarray[i][2],jsonarray[i][3],jsonarray[i][4]]]
+      var jsonarray=activeSheet.getRange(row,1,1,8).getValues();
+      Logger.log('method-bidOperationRun jsonarray: '+jsonarray);
+      var campaignId=jsonarray[0][2];
+      var tagRun=jsonarray[0][7];
+      var jsonBodyArray=[[jsonarray[0][3],jsonarray[0][4],jsonarray[0][5],jsonarray[0][6]]]
       Logger.log('method-bidOperationRun jsonBodyArray: '+jsonBodyArray)
       Logger.log('method-bidOperationRun campaignId: '+campaignId);
       Logger.log('method-bidOperationRun tagRun: '+tagRun);
-      var result1 = JSON.stringify(jsonBodyArray.map(([a,b,c,d]) => ({pub_app_id: a,name:b,geo:c,rate:d})));
+      var result1 = JSON.stringify(jsonBodyArray.map(([a,b,c,d]) => ({name: a,pub_app_id:b,geo:c,rate:d})));
       var result2="{\"publisher_rates\":"+result1+"}";
       Logger.log('method-bidOperationRun jsonBody: '+result2);
-      if(tagRun=="update"){
-         UpdateInsertBid(i,campaignId,result2)
-        
-        // var responseArrar=response.split(':');
-        // activeSheet.getRange(i+10,7).setBackgroundRGB(0,200,0)
-        // activeSheet.getRange(i+10,7).setValue(response)
-        // Logger.log('method-bidOperationRun response: '+response);
+      if(!(tagRun=="update"||tagRun=="delete")){
+         // to do 
+        var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        activeSheet.getRange(row,9).setBackgroundRGB(255,215,0).setValue("Can NOT Identify Update or Insert with "+tagRun)
+         
       }else if(tagRun=="delete"){
-          DeleteBid(i,campaignId,result2)
+          DeleteBid(row,campaignId,result2)
+      }else if(tagRun=="update"){
+          UpdateInsertBid(row,campaignId,result2) 
       }
     }
 }
-
-
-
+}
 
 function  budgetOperationRun(){
+     var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+     var activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName();
+     if(!activeSheetName.includes("Budget")){
+      showAlert('Update Budget ')
+      return 
+     }
 
-   var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var jsonarray=activeSheet.getActiveRange().getValues();
-  activeSheet.getRange(10,13,500).clear();
-  Logger.log('method-budgetOperationRun jsonarray: '+jsonarray);
-  for (var i=0,len=jsonarray.length; i<len; i++)
-{ 
-    //获取campaignID
-     activeSheet.getRange(i+10,13).setBackgroundRGB(205,127,50)
-     activeSheet.getRange(i+10,13).setValue("running")
-      var campaignId=jsonarray[i][0];
-      var jsonBodyArray=[[jsonarray[i][1],jsonarray[i][2],jsonarray[i][3],jsonarray[i][4]]]
-      Logger.log('method-budgetOperationRun jsonBodyArray: '+jsonBodyArray)
-      Logger.log('method-budgetOperationRun campaignId: '+campaignId);
-      var result1 = JSON.stringify(jsonBodyArray.map(([a,b,c,d]) => ({bid: a,daily:b,total:c,type:"install"})));
-      var result2="{\"budget\":"+result1+"}";
+   for (var row=7; row<1000; row++)
+      {  
+        var campaignId=activeSheet.getRange(row,3).getValue();
+        Logger.log('method-bidOperationRun campaignId: '+campaignId);
+        if(campaignId==""||campaignId==null){
+          Logger.log('method-budgetOperationRun break: ');
+             break;// Stop the loop
+        }else
+        {
+        activeSheet.getRange(row,8).setBackgroundRGB(183,225,205)
+        activeSheet.getRange(row,8).setValue("running")
+        //获取每一行数组
+        var jsonarray=activeSheet.getRange(row,1,1,7).getValues();
+        Logger.log('method-bidOperationRun jsonarray: '+jsonarray);
+        var campaignId=jsonarray[0][2];
+        var jsonBodyArray=[[jsonarray[0][3],jsonarray[0][4],jsonarray[0][5],jsonarray[0][6]]]
+        Logger.log('method-bidOperationRun jsonBodyArray: '+jsonBodyArray)
+        Logger.log('method-bidOperationRun campaignId: '+campaignId);
+        var result1 = JSON.stringify(jsonBodyArray.map(([a,b,c,d]) => ({bid: a,daily:b,total:c,type:"install"})));
+        var result2="{\"budget\":"+result1+"}";
       //去掉中括号，暂时想不到其他方法。
-      var result2=result2.split("[").join("");
-      var result2=result2.split("]").join("");
-      Logger.log('method-budgetOperationRun jsonBody: '+result2);
-     SetBudget(i,campaignId,result2)
+        var result2=result2.split("[").join("");
+        var result2=result2.split("]").join("");
+        Logger.log('method-budgetOperationRun jsonBody: '+result2);
+        SetBudget(row,campaignId,result2)
+      }
+   
     }
 }
+
+
+
+function showAlert(sheetname) {
+     var ui = SpreadsheetApp.getUi(); // Same variations.
+     var result = ui.alert(
+     'Opps',
+     'You are not in the ' +sheetname+'sheet~',
+      ui.ButtonSet.OK);
+}
+
+function printKeys(obj) {
+    for(var k in obj) {
+      if(k=='messages')
+      {
+         var tempmsg=obj.messages.toString();
+         if(tempmsg.includes("campaign not found")){
+            errmsg='campaign not found'
+            break
+         }else if(tempmsg.includes("should be")){
+            errmsg='rate should be number'
+            break
+         }else{
+           printKeys(obj[k]);
+         }
+      }else if(k=='message'){
+            errmsg='token is invalid'
+            break
+      }else if(obj[k] instanceof Object) {
+            if(k.includes("invalidRateEntries")){
+               errmsg="rate not valid"
+              break
+            }else if(k.includes("Non-existing pub_app_ids")){
+               errmsg="publisher_id  not found"
+              break
+            }else if(k.includes("invalidGeos")){
+               errmsg="geo not found"
+              break
+            }else if(k.includes("Following entries do not exist")){
+               errmsg="the entries do not exist"
+              break
+            }else if(k.includes("Invalid pub_app_id")){
+               errmsg="publisher_id is empty "
+              break
+            }else{
+               printKeys(obj[k]);
+            }
+        }  
+    }
+};
+//  if(resstr.includes("invalidRateEntries")){
+//          activeSheet.getRange(i,9).setBackgroundRGB(200,0,0).setValue("Rate is Not valid")
+//         }else if(resstr.includes("Non-existing pub_app_ids")){
+//          activeSheet.getRange(i,9).setBackgroundRGB(200,0,0).setValue("publisherId is NOT found")       
+//         }else if(resstr.includes("invalidGeos")){
+//          activeSheet.getRange(i,9).setBackgroundRGB(200,0,0).setValue("GEO is NOT found")       
+//         }else{
+//          activeSheet.getRange(i,9).setBackgroundRGB(200,0,0).setValue(obj.messages.toString())       
+//         }
 
 
 
